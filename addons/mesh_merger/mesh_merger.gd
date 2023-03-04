@@ -1,6 +1,6 @@
+@tool
 extends MeshInstance3D
 class_name MeshMerger
-@tool
 
 var result_mesh:ArrayMesh
 var result_mesh_material:Material
@@ -19,6 +19,11 @@ var result_mesh_material:Material
 		clean_meshes()
 		
 		
+@export var btn_generate_lods:bool = false:
+	set(value):
+		generate_lods()
+
+
 @export var toggle_children_visibility:bool = false:
 	get:
 		return toggle_children_visibility
@@ -31,6 +36,19 @@ var result_mesh_material:Material
 		delete_child_meshes_on_play = value
 	get:
 		return delete_child_meshes_on_play
+
+
+func generate_lods():
+	if mesh == null:
+		printerr("Mesh has no surface to create LODs from.")
+		return
+
+	var _importer_mesh := ImporterMesh.new()
+	var surface_array := mesh.surface_get_arrays(0)
+	_importer_mesh.clear()
+	_importer_mesh.add_surface(Mesh.PRIMITIVE_TRIANGLES, surface_array)
+	_importer_mesh.generate_lods(30, 60, [])
+	mesh = _importer_mesh.get_mesh()
 
 # warning-ignore:unused_argument
 func merge_meshes() -> void:
@@ -45,6 +63,7 @@ func merge_meshes() -> void:
 		clean_collisions()
 
 	var _surface_tool := SurfaceTool.new()
+#	var _importer_mesh:= ImporterMesh.new()
 
 	for node in get_children():
 		if node is MeshInstance3D:
